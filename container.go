@@ -53,16 +53,18 @@ func (c *Container) Has(name string) bool {
 
 // Get service
 func (c *Container) Get(name string) interface{} {
-	c.mtx.Lock()
-	defer c.mtx.Unlock()
-
+	c.mtx.RLock()
 	if _, ok := c.values[name]; !ok {
+		c.mtx.RUnlock()
 		panic(fmt.Sprintf("The service does not exist: %s", name))
 	}
+	c.mtx.RUnlock()
 
+	c.mtx.Lock()
 	if _, ok := c.services[name]; !ok {
 		c.services[name] = c.values[name](c)
 	}
+	c.mtx.Unlock()
 
 	return c.services[name]
 }
