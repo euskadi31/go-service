@@ -30,3 +30,7 @@ test:
 cover: test
 	@echo ""
 	@for PKG in $(PACKAGES); do go tool cover -func $$GOPATH/src/$$PKG/coverage.out; echo ""; done;
+
+travis:
+	@for PKG in $(PACKAGES); do go test -cover -covermode=count -coverprofile $$GOPATH/src/$$PKG/coverage.out $$PKG || exit 1; done;
+

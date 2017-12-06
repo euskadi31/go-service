@@ -1,5 +1,13 @@
-Go Service Container
+Go Service Container ![Last release](https://img.shields.io/github/release/euskadi31/go-service.svg)
 ====================
+
+[![Go Report Card](https://goreportcard.com/badge/github.com/euskadi31/go-service)](https://goreportcard.com/report/github.com/euskadi31/go-service)
+
+| Branch  | Status | Coverage |
+|---------|--------|----------|
+| master  | [![Build Status](https://img.shields.io/travis/euskadi31/go-service/master.svg)](https://travis-ci.org/euskadi31/go-service) | [![Coveralls](https://img.shields.io/coveralls/euskadi31/go-service/master.svg)](https://coveralls.io/github/euskadi31/go-service?branch=master) |
+| develop | [![Build Status](https://img.shields.io/travis/euskadi31/go-service/develop.svg)](https://travis-ci.org/euskadi31/go-service) | [![Coveralls](https://img.shields.io/coveralls/euskadi31/go-service/develop.svg)](https://coveralls.io/github/euskadi31/go-service?branch=develop) |
+
 
 Simple Dependency Injection Container for Golang
 
