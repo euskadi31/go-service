@@ -7,6 +7,7 @@ import (
 )
 
 type MyService struct {
+	Name string
 }
 
 func TestContainer(t *testing.T) {
@@ -16,19 +17,23 @@ func TestContainer(t *testing.T) {
 
 	assert.Equal(t, []string{}, c.GetKeys())
 
-	err := c.Set("my.service", func(c *Container) interface{} {
+	c.Set("my.service", func(c Container) interface{} {
 		return &MyService{}
 	})
-	assert.NoError(t, err)
+
+	c.Extend("my.service", func(s *MyService) *MyService {
+		s.Name = "My Service"
+
+		return s
+	})
 
 	assert.True(t, c.Has("my.service"))
 
 	assert.Equal(t, []string{"my.service"}, c.GetKeys())
 
-	err = c.Set("my.service", func(c *Container) interface{} {
+	c.Set("my.service", func(c Container) interface{} {
 		return &MyService{}
 	})
-	assert.NoError(t, err)
 
 	myService1 := c.Get("my.service").(*MyService)
 
@@ -36,12 +41,43 @@ func TestContainer(t *testing.T) {
 
 	assert.Equal(t, myService1, myService2)
 
-	err = c.Set("my.service", func(c *Container) interface{} {
-		return &MyService{}
+	assert.Equal(t, "My Service", myService1.Name)
+
+	assert.Panics(t, func() {
+		c.Set("my.service", func(c Container) interface{} {
+			return &MyService{}
+		})
 	})
-	assert.Error(t, err)
+
+	assert.Panics(t, func() {
+		c.Extend("my.service", func(s *MyService) *MyService {
+			s.Name = "My Service 2"
+
+			return s
+		})
+	})
+
+	assert.Panics(t, func() {
+		c.Extend("not.exists.service", func(s *MyService) *MyService {
+			s.Name = "My Service 3"
+
+			return s
+		})
+	})
 
 	assert.Panics(t, func() {
 		c.Get("test.bad.service.name")
+	})
+
+	var myService3 *MyService
+
+	c.Fill("my.service", &myService3)
+
+	assert.Equal(t, myService2, myService3)
+
+	assert.Panics(t, func() {
+		var bad string
+
+		c.Fill("my.service", &bad)
 	})
 }

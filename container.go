@@ -1,46 +1,65 @@
 package service
 
 import (
-	"errors"
 	"fmt"
+	"log"
+	"reflect"
 	"sync"
 )
 
-// ContainerFunc type
-type ContainerFunc func(container *Container) interface{}
+// Container interface
+type Container interface {
+	// Set service
+	Set(name string, f ContainerFunc)
+	// Has service exists
+	Has(name string) bool
+	// Get service
+	Get(name string) interface{}
+	// GetKeys of all services
+	GetKeys() []string
+	// Fill dst
+	Fill(name string, dst interface{})
+	// Extend service
+	Extend(name string, f ExtenderFunc)
+}
 
-// Container struct
-type Container struct {
-	values   map[string]ContainerFunc // contains the original closure to generate the service
-	services map[string]interface{}   // contains the instantiated services
+// ContainerFunc type
+type ContainerFunc func(container Container) interface{}
+
+// ExtenderFunc type
+type ExtenderFunc interface{}
+
+type container struct {
+	values   map[string]ContainerFunc   // contains the original closure to generate the service
+	extends  map[string][]reflect.Value // contains the extends closure
+	services map[string]interface{}     // contains the instantiated services
 	mtx      *sync.RWMutex
 }
 
 // New constructor
-func New() *Container {
-	return &Container{
+func New() Container {
+	return &container{
 		services: make(map[string]interface{}),
 		values:   make(map[string]ContainerFunc),
+		extends:  make(map[string][]reflect.Value),
 		mtx:      &sync.RWMutex{},
 	}
 }
 
 // Set service
-func (c *Container) Set(name string, f ContainerFunc) error {
+func (c *container) Set(name string, f ContainerFunc) {
 	c.mtx.Lock()
 	defer c.mtx.Unlock()
 
 	if _, ok := c.services[name]; ok {
-		return errors.New("Cannot overwrite initialized service")
+		log.Panic("Cannot overwrite initialized service")
 	}
 
 	c.values[name] = f
-
-	return nil
 }
 
 // Has service exists
-func (c *Container) Has(name string) bool {
+func (c *container) Has(name string) bool {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
 
@@ -52,7 +71,7 @@ func (c *Container) Has(name string) bool {
 }
 
 // Get service
-func (c *Container) Get(name string) interface{} {
+func (c *container) Get(name string) interface{} {
 	c.mtx.RLock()
 	_, ok := c.values[name]
 	c.mtx.RUnlock()
@@ -64,7 +83,20 @@ func (c *Container) Get(name string) interface{} {
 	_, ok = c.services[name]
 	c.mtx.RUnlock()
 	if !ok {
+		c.mtx.RLock()
 		v := c.values[name](c)
+		c.mtx.RUnlock()
+
+		// apply extends to service
+		if extends, ok := c.extends[name]; ok {
+			for _, extend := range extends {
+				result := extend.Call([]reflect.Value{
+					reflect.ValueOf(v),
+				})
+
+				v = result[0].Interface()
+			}
+		}
 
 		c.mtx.Lock()
 		c.services[name] = v
@@ -78,7 +110,7 @@ func (c *Container) Get(name string) interface{} {
 }
 
 // GetKeys of all services
-func (c *Container) GetKeys() []string {
+func (c *container) GetKeys() []string {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
 
@@ -89,4 +121,43 @@ func (c *Container) GetKeys() []string {
 	}
 
 	return keys
+}
+
+// Fill dst
+func (c *container) Fill(name string, dst interface{}) {
+	obj := c.Get(name)
+
+	if err := fill(obj, dst); err != nil {
+		log.Panic(err)
+	}
+}
+
+// Extend service
+func (c *container) Extend(name string, f ExtenderFunc) {
+	c.mtx.Lock()
+	defer c.mtx.Unlock()
+
+	if _, ok := c.services[name]; ok {
+		log.Panic("Cannot extend initialized service")
+	}
+
+	if _, ok := c.values[name]; !ok {
+		log.Panicf("Cannot extend %s service", name)
+	}
+
+	c.extends[name] = append(c.extends[name], reflect.ValueOf(f))
+}
+
+func fill(src, dest interface{}) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			d := reflect.TypeOf(dest)
+			s := reflect.TypeOf(src)
+			err = fmt.Errorf("the fill destination should be a pointer to a `%s`, but you used a `%s`", s, d)
+		}
+	}()
+
+	reflect.ValueOf(dest).Elem().Set(reflect.ValueOf(src))
+
+	return err
 }

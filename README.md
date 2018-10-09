@@ -14,19 +14,45 @@ Simple Dependency Injection Container for Golang
 ## Example
 
 ```go
-import "github.com/euskadi31/go-service"
+package main
 
-type MyService struct {}
+import (
+    "fmt"
+    "github.com/euskadi31/go-service"
+)
 
-sc := service.New()
+type MyService struct {
+    name string
+}
 
-// Define service
-sc.Set("my.service", func(c *service.Container) interface{} {
-    return &MyService{}
-})
+func (s *MyService) SetName(name string) {
+    s.name = name
+}
 
-// Call service 
-myService := sc.Get("my.service").(*MyService)
+func (s *MyService) Name() string {
+    return s.name
+}
+
+func main() {
+    sc := service.New()
+
+    // Define service
+    sc.Set("my.service", func(c *service.Container) interface{} {
+        return &MyService{}
+    })
+
+    // Extend service
+    sc.Extend("my.service", func(s *MyService) *MyService {
+        s.SetName("My Service")
+
+        return s
+    })
+
+    // Call service 
+    myService := sc.Get("my.service").(*MyService)
+
+    fmt.Printf("Service Name: %s", myService.Name())
+}
 
 ```
 
