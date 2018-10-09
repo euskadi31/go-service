@@ -83,9 +83,7 @@ func (c *container) Get(name string) interface{} {
 	_, ok = c.services[name]
 	c.mtx.RUnlock()
 	if !ok {
-		c.mtx.RLock()
 		v := c.values[name](c)
-		c.mtx.RUnlock()
 
 		// apply extends to service
 		if extends, ok := c.extends[name]; ok {
