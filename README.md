@@ -1,4 +1,4 @@
-Go Service Container ![Last release](https://img.shields.io/github/release/euskadi31/go-service.svg) [![Documentation](https://godoc.org/github.com/euskadi31/go-service?status.svg)](https://godoc.org/github.com/euskadi31/go-service)
+Go Service Container [![Last release](https://img.shields.io/github/release/euskadi31/go-service.svg)](https://github.com/euskadi31/go-service/releases/latest) [![Documentation](https://godoc.org/github.com/euskadi31/go-service?status.svg)](https://godoc.org/github.com/euskadi31/go-service)
 ====================
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/euskadi31/go-service)](https://goreportcard.com/report/github.com/euskadi31/go-service)
