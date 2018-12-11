@@ -1,4 +1,4 @@
-Go Service Container ![Last release](https://img.shields.io/github/release/euskadi31/go-service.svg)
+Go Service Container ![Last release](https://img.shields.io/github/release/euskadi31/go-service.svg) [![Documentation](https://img.shields.io/badge/doc-current-brightgreen.svg)](https://godoc.org/github.com/euskadi31/go-service)
 ====================
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/euskadi31/go-service)](https://goreportcard.com/report/github.com/euskadi31/go-service)
@@ -6,7 +6,6 @@ Go Service Container ![Last release](https://img.shields.io/github/release/euska
 | Branch  | Status | Coverage |
 |---------|--------|----------|
 | master  | [![Build Status](https://img.shields.io/travis/euskadi31/go-service/master.svg)](https://travis-ci.org/euskadi31/go-service) | [![Coveralls](https://img.shields.io/coveralls/euskadi31/go-service/master.svg)](https://coveralls.io/github/euskadi31/go-service?branch=master) |
-| develop | [![Build Status](https://img.shields.io/travis/euskadi31/go-service/develop.svg)](https://travis-ci.org/euskadi31/go-service) | [![Coveralls](https://img.shields.io/coveralls/euskadi31/go-service/develop.svg)](https://coveralls.io/github/euskadi31/go-service?branch=develop) |
 
 
 Simple Dependency Injection Container for Golang
@@ -37,7 +36,7 @@ func main() {
     sc := service.New()
 
     // Define service
-    sc.Set("my.service", func(c *service.Container) interface{} {
+    sc.Set("my.service", func(c service.Container) interface{} {
         return &MyService{}
     })
 
@@ -55,7 +54,6 @@ func main() {
 }
 
 ```
-
 
 ## License
 
