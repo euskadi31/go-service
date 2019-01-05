@@ -19,7 +19,7 @@ func TestDefaultContainer(t *testing.T) {
 		return &MyService{}
 	})
 
-	Extend("my.service", func(s *MyService) *MyService {
+	Extend("my.service", func(s *MyService, c Container) *MyService {
 		s.Name = "My Service"
 
 		return s
@@ -48,7 +48,7 @@ func TestDefaultContainer(t *testing.T) {
 	})
 
 	assert.Panics(t, func() {
-		Extend("my.service", func(s *MyService) *MyService {
+		Extend("my.service", func(s *MyService, c Container) *MyService {
 			s.Name = "My Service 2"
 
 			return s
@@ -56,7 +56,7 @@ func TestDefaultContainer(t *testing.T) {
 	})
 
 	assert.Panics(t, func() {
-		Extend("not.exists.service", func(s *MyService) *MyService {
+		Extend("not.exists.service", func(s *MyService, c Container) *MyService {
 			s.Name = "My Service 3"
 
 			return s
