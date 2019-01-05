@@ -94,6 +94,7 @@ func (c *container) Get(name string) interface{} {
 			for _, extend := range extends {
 				result := extend.Call([]reflect.Value{
 					reflect.ValueOf(v),
+					reflect.ValueOf(c),
 				})
 
 				v = result[0].Interface()
