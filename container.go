@@ -89,6 +89,10 @@ func (c *container) Get(name string) interface{} {
 	if !ok {
 		v := c.values[name](c)
 
+		c.mtx.Lock()
+		c.services[name] = v
+		c.mtx.Unlock()
+
 		// apply extends to service
 		if extends, ok := c.extends[name]; ok {
 			for _, extend := range extends {
@@ -97,13 +101,11 @@ func (c *container) Get(name string) interface{} {
 					reflect.ValueOf(c),
 				})
 
-				v = result[0].Interface()
+				c.mtx.Lock()
+				c.services[name] = result[0].Interface()
+				c.mtx.Unlock()
 			}
 		}
-
-		c.mtx.Lock()
-		c.services[name] = v
-		c.mtx.Unlock()
 	}
 
 	c.mtx.RLock()
