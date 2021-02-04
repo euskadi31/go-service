@@ -5,6 +5,8 @@
 package service
 
 import (
+	"flag"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -84,4 +86,59 @@ func TestContainer(t *testing.T) {
 
 		c.Fill("my.service", &bad)
 	})
+
+	assert.False(t, c.Has("my.static.value"))
+
+	c.SetValue("my.static.value", "bar")
+
+	assert.Equal(t, "bar", c.Get("my.static.value"))
+
+	assert.True(t, c.Has("my.static.value"))
+
+	assert.Panics(t, func() {
+		c.SetValue("my.static.value", "bar")
+	})
+}
+
+func TestContainerWithExtendBug(t *testing.T) {
+	c := New()
+
+	c.Set("my.service", func(c Container) interface{} {
+		return &MyService{}
+	})
+
+	c.Set("config", func(c Container) interface{} {
+		cmd := flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
+
+		cmd.String("config", "", "")
+		// nolint:gosec
+		_ = cmd.Parse(os.Args[1:])
+
+		return cmd
+	})
+
+	c.Extend("my.service", func(s *MyService, c Container) *MyService {
+		_ = c.Get("config")
+
+		s.Name = "My Service"
+
+		return s
+	})
+
+	assert.True(t, c.Has("my.service"))
+
+	_ = c.Get("my.service").(*MyService)
+
+}
+
+func BenchmarkContainerGet(b *testing.B) {
+	c := New()
+
+	c.Set("my.service", func(c Container) interface{} {
+		return &MyService{}
+	})
+
+	for n := 0; n < b.N; n++ {
+		c.Get("my.service")
+	}
 }

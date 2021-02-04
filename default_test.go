@@ -78,4 +78,12 @@ func TestDefaultContainer(t *testing.T) {
 
 		Fill("my.service", &bad)
 	})
+
+	SetValue("my.static.value", "bar")
+
+	assert.Equal(t, "bar", Get("my.static.value"))
+
+	assert.Panics(t, func() {
+		SetValue("my.static.value", "bar")
+	})
 }
