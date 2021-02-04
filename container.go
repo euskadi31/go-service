@@ -13,6 +13,8 @@ import (
 
 // Container interface
 type Container interface {
+	// SetValue static
+	SetValue(name string, v interface{})
 	// Set service
 	Set(name string, f ContainerFunc)
 	// Has service exists
@@ -50,6 +52,18 @@ func New() Container {
 	}
 }
 
+// SetValue static
+func (c *container) SetValue(name string, v interface{}) {
+	c.mtx.Lock()
+	defer c.mtx.Unlock()
+
+	if _, ok := c.services[name]; ok {
+		log.Panic("Cannot overwrite initialized service")
+	}
+
+	c.services[name] = v
+}
+
 // Set service
 func (c *container) Set(name string, f ContainerFunc) {
 	c.mtx.Lock()
@@ -71,47 +85,56 @@ func (c *container) Has(name string) bool {
 		return true
 	}
 
+	if _, ok := c.services[name]; ok {
+		return true
+	}
+
 	return false
 }
 
 // Get service
 func (c *container) Get(name string) interface{} {
 	c.mtx.RLock()
-	_, ok := c.values[name]
+	v, ok := c.services[name]
+	c.mtx.RUnlock()
+	if ok {
+		return v
+	}
+
+	c.mtx.RLock()
+	f, ok := c.values[name]
 	c.mtx.RUnlock()
 	if !ok {
 		panic(fmt.Sprintf("The service does not exist: %s", name))
 	}
 
-	c.mtx.RLock()
-	_, ok = c.services[name]
-	c.mtx.RUnlock()
-	if !ok {
-		v := c.values[name](c)
+	v = f(c)
 
-		c.mtx.Lock()
-		c.services[name] = v
-		c.mtx.Unlock()
+	c.mtx.Lock()
+	c.services[name] = v
+	c.mtx.Unlock()
 
-		// apply extends to service
-		if extends, ok := c.extends[name]; ok {
-			for _, extend := range extends {
-				result := extend.Call([]reflect.Value{
-					reflect.ValueOf(v),
-					reflect.ValueOf(c),
-				})
+	// apply extends to service
+	if extends, ok := c.extends[name]; ok {
+		for _, extend := range extends {
+			result := extend.Call([]reflect.Value{
+				reflect.ValueOf(v),
+				reflect.ValueOf(c),
+			})
 
-				c.mtx.Lock()
-				c.services[name] = result[0].Interface()
-				c.mtx.Unlock()
-			}
+			c.mtx.Lock()
+			c.services[name] = result[0].Interface()
+			c.mtx.Unlock()
 		}
 	}
 
-	c.mtx.RLock()
-	defer c.mtx.RUnlock()
+	return v
+	/*
+		c.mtx.RLock()
+		defer c.mtx.RUnlock()
 
-	return c.services[name]
+		return c.services[name]
+	*/
 }
 
 // GetKeys of all services

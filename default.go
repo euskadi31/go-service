@@ -6,6 +6,11 @@ package service
 
 var defaultContainer = New()
 
+// SetValue static
+func SetValue(name string, v interface{}) {
+	defaultContainer.SetValue(name, v)
+}
+
 // Set service
 func Set(name string, f ContainerFunc) {
 	defaultContainer.Set(name, f)
