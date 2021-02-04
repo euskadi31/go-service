@@ -16,6 +16,9 @@ type MyService struct {
 	Name string
 }
 
+type Config struct {
+}
+
 func TestContainer(t *testing.T) {
 	c := New()
 
@@ -136,6 +139,58 @@ func BenchmarkContainerGet(b *testing.B) {
 
 	c.Set("my.service", func(c Container) interface{} {
 		return &MyService{}
+	})
+
+	for n := 0; n < b.N; n++ {
+		c.Get("my.service")
+	}
+}
+
+func BenchmarkContainerFill(b *testing.B) {
+	c := New()
+
+	c.Set("my.service", func(c Container) interface{} {
+		return &MyService{}
+	})
+
+	for n := 0; n < b.N; n++ {
+		var myService3 *MyService
+
+		c.Fill("my.service", &myService3)
+	}
+}
+
+func BenchmarkContainerGetPreInit(b *testing.B) {
+	c := New()
+
+	c.Set("my.service", func(c Container) interface{} {
+		return &MyService{}
+	})
+
+	c.Get("my.service")
+
+	for n := 0; n < b.N; n++ {
+		c.Get("my.service")
+	}
+}
+
+func BenchmarkContainerGetWithExtend(b *testing.B) {
+	c := New()
+
+	c.Set("my.service", func(c Container) interface{} {
+		return &MyService{}
+	})
+
+	c.Set("config", func(c Container) interface{} {
+		return &Config{}
+	})
+
+	c.Extend("my.service", func(s *MyService, c Container) *MyService {
+		_ = c.Get("config")
+
+		s.Name = "My Service"
+
+		return s
 	})
 
 	for n := 0; n < b.N; n++ {
