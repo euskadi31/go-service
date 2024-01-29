@@ -6,37 +6,37 @@ package service
 
 var defaultContainer = New()
 
-// SetValue static
+// SetValue static.
 func SetValue(name string, v interface{}) {
 	defaultContainer.SetValue(name, v)
 }
 
-// Set service
+// Set service.
 func Set(name string, f ContainerFunc) {
 	defaultContainer.Set(name, f)
 }
 
-// Has service exists
+// Has service exists.
 func Has(name string) bool {
 	return defaultContainer.Has(name)
 }
 
-// Get service
+// Get service.
 func Get(name string) interface{} {
 	return defaultContainer.Get(name)
 }
 
-// GetKeys of all services
+// GetKeys of all services.
 func GetKeys() []string {
 	return defaultContainer.GetKeys()
 }
 
-// Fill dst
+// Fill dst.
 func Fill(name string, dst interface{}) {
 	defaultContainer.Fill(name, dst)
 }
 
-// Extend service
+// Extend service.
 func Extend(name string, f ExtenderFunc) {
 	defaultContainer.Extend(name, f)
 }

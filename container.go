@@ -11,7 +11,7 @@ import (
 	"sync"
 )
 
-// Container interface
+// Container interface.
 type Container interface {
 	// SetValue static
 	SetValue(name string, v interface{})
@@ -29,10 +29,10 @@ type Container interface {
 	Extend(name string, f ExtenderFunc)
 }
 
-// ContainerFunc type
+// ContainerFunc type.
 type ContainerFunc func(container Container) interface{}
 
-// ExtenderFunc type
+// ExtenderFunc type.
 type ExtenderFunc interface{}
 
 type container struct {
@@ -42,7 +42,7 @@ type container struct {
 	mtx      *sync.RWMutex
 }
 
-// New constructor
+// New constructor.
 func New() Container {
 	return &container{
 		services: make(map[string]interface{}),
@@ -52,7 +52,7 @@ func New() Container {
 	}
 }
 
-// SetValue static
+// SetValue static.
 func (c *container) SetValue(name string, v interface{}) {
 	c.mtx.Lock()
 	defer c.mtx.Unlock()
@@ -64,7 +64,7 @@ func (c *container) SetValue(name string, v interface{}) {
 	c.services[name] = v
 }
 
-// Set service
+// Set service.
 func (c *container) Set(name string, f ContainerFunc) {
 	c.mtx.Lock()
 	defer c.mtx.Unlock()
@@ -76,7 +76,7 @@ func (c *container) Set(name string, f ContainerFunc) {
 	c.values[name] = f
 }
 
-// Has service exists
+// Has service exists.
 func (c *container) Has(name string) bool {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
@@ -92,11 +92,12 @@ func (c *container) Has(name string) bool {
 	return false
 }
 
-// Get service
+// Get service.
 func (c *container) Get(name string) interface{} {
 	c.mtx.RLock()
 	v, ok := c.services[name]
 	c.mtx.RUnlock()
+
 	if ok {
 		return v
 	}
@@ -104,6 +105,7 @@ func (c *container) Get(name string) interface{} {
 	c.mtx.RLock()
 	f, ok := c.values[name]
 	c.mtx.RUnlock()
+
 	if !ok {
 		panic(fmt.Sprintf("The service does not exist: %s", name))
 	}
@@ -129,15 +131,9 @@ func (c *container) Get(name string) interface{} {
 	}
 
 	return v
-	/*
-		c.mtx.RLock()
-		defer c.mtx.RUnlock()
-
-		return c.services[name]
-	*/
 }
 
-// GetKeys of all services
+// GetKeys of all services.
 func (c *container) GetKeys() []string {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
@@ -151,7 +147,7 @@ func (c *container) GetKeys() []string {
 	return keys
 }
 
-// Fill dst
+// Fill dst.
 func (c *container) Fill(name string, dst interface{}) {
 	obj := c.Get(name)
 
@@ -160,7 +156,7 @@ func (c *container) Fill(name string, dst interface{}) {
 	}
 }
 
-// Extend service
+// Extend service.
 func (c *container) Extend(name string, f ExtenderFunc) {
 	c.mtx.Lock()
 	defer c.mtx.Unlock()

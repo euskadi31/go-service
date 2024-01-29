@@ -1,76 +1,85 @@
-run:
-    concurrency: 4
-    deadline: 1m
-    issues-exit-code: 1
-    tests: false
-    skip-files:
-        - ".*_mock\\.go"
-        - "mock_.*\\.go"
-        - ".*/pkg/mod/.*$"
-
-output:
-    format: colored-line-number
-    print-issued-lines: true
-    print-linter-name: true
-
-linters-settings:
-    errcheck:
-        check-type-assertions: false
-        check-blank: false
-    govet:
-        check-shadowing: false
-    golint:
-        min-confidence: 0.8
-    gofmt:
-        simplify: true
-    gocyclo:
-        min-complexity: 18
-    maligned:
-        suggest-new: true
-    dupl:
-        threshold: 50
-    goconst:
-        min-len: 3
-        min-occurrences: 2
-  # depguard:
-  #   list-type: blacklist
-  #   include-go-root: false
-  #   packages:
-  #     - github.com/davecgh/go-spew/spew
-
 linters:
-    disable-all: true
-    enable:
-        # deadcode currently fails with tests
-        # https://github.com/golangci/golangci-lint/issues/116
-        # - deadcode
-        #- depguard
-        - errcheck
-        - gas
-        - goconst
-        - gocyclo
-        - gofmt
-        - golint
-        - govet
-        - ineffassign
-        - interfacer
-        - megacheck
-        - misspell
-        - structcheck
-        - typecheck
-        - unconvert
-        - varcheck
-    fast: false
-
-issues:
-    exclude:
-        # hack for go-service, fixed in v1.1.0
-        #- "Errors unhandled."
-        #- "Error return value of `container.Set` is not checked"
-        #- "composite literal uses unkeyed fields" # govet
-    #   exclude-use-default: true
-    #   max-per-linter: 0
-    #   max-same: 0
-    #   new: false
-    #   new-from-rev: ""
-    #   new-from-patch: ""
+  disable-all: true
+  enable:
+    - errcheck
+    - gas
+    - goconst
+    - gocyclo
+    - gofmt
+    - revive
+    - govet
+    - ineffassign
+    - megacheck
+    - misspell
+    - typecheck
+    - unconvert
+    - gosimple
+    - staticcheck
+    - unused
+    - asciicheck
+    - bodyclose
+    - dogsled
+    - durationcheck
+    - errorlint
+    - exhaustive
+    - exportloopref
+    - forbidigo
+    - forcetypeassert
+    - gocritic
+    - godot
+    - gosec
+    - nestif
+    - nilerr
+    - nlreturn
+    - noctx
+    - prealloc
+    - predeclared
+    - sqlclosecheck
+    - whitespace
+    - wrapcheck
+    - wsl
+  fast: false
+linters-settings:
+  depguard:
+    rules:
+      main:
+        allow:
+          - $all
+  dupl:
+    threshold: 99
+  errcheck:
+    check-blank: false
+    check-type-assertions: false
+  goconst:
+    min-len: 3
+    min-occurrences: 2
+  gocyclo:
+    min-complexity: 18
+  gofmt:
+    simplify: true
+  goimports:
+    local-prefixes: go.opentelemetry.io
+  govet:
+    check-shadowing: false
+  maligned:
+    suggest-new: true
+  misspell:
+    ignore-words:
+      - cancelled
+    locale: US
+  revive:
+    ignore-generated-header: true
+    severity: warning
+output:
+  format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
+run:
+  concurrency: 4
+  issues-exit-code: 1
+  skip-files:
+    - .*_mock\.go
+    - mock_.*\.go
+    - .*/pkg/mod/.*$
+  tests: false
+  timeout: 1m
